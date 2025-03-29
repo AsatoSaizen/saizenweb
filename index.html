@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asato Saizen - Repository Explorer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Rickoto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background: #0D0A13;
+            color: #E6E1E6;
+            min-height: 100vh;
+            line-height: 1.5;
+            transition: background 0.3s, color 0.3s;
+        }
+        body.light-mode {
+            background: #f5f5f7;
+            color: #333;
+        }
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 5%;
+            background: #1A1525;
+            border-bottom: 1px solid #2D263D;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            transition: background 0.3s, border-color 0.3s;
+        }
+        body.light-mode nav {
+            background: #ffffff;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .nav-title {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        .nav-icon {
+            color: #C4B9CD;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        body.light-mode .nav-icon {
+            color: #666;
+        }
+        .nav-icon:hover {
+            color: #FF2D74;
+        }
+
+        /* Menu Button Styles */
+        .menu-btn {
+            width: 30px;
+            height: 30px;
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .menu-btn__burger {
+            width: 25px;
+            height: 3px;
+            background: #C4B9CD;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+        body.light-mode .menu-btn__burger {
+            background: #666;
+        }
+        .menu-btn__burger::before,
+        .menu-btn__burger::after {
+            content: '';
+            position: absolute;
+            width: 25px;
+            height: 3px;
+            background: #C4B9CD;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+        body.light-mode .menu-btn__burger::before,
+        body.light-mode .menu-btn__burger::after {
+            background: #666;
+        }
+        .menu-btn__burger::before {
+            transform: translateY(-8px);
+        }
+        .menu-btn__burger::after {
+            transform: translateY(8px);
+        }
+        /* Menu Button Animation */
+        .menu-btn.open .menu-btn__burger {
+            transform: translateX(-20px);
+            background: transparent;
+        }
+        .menu-btn.open .menu-btn__burger::before {
+            transform: rotate(45deg) translate(15px, -15px);
+            background: #FF2D74;
+        }
+        .menu-btn.open .menu-btn__burger::after {
+            transform: rotate(-45deg) translate(15px, 15px);
+            background: #FF2D74;
+        }
+
+        /* Menu Dropdown */
+        .menu-dropdown {
+            position: absolute;
+            top: 70px;
+            right: 5%;
+            background: #1A1525;
+            border: 1px solid #2D263D;
+            border-radius: 8px;
+            width: 200px;
+            padding: 1rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            transform: translateY(-20px);
+            z-index: 999;
+        }
+        body.light-mode .menu-dropdown {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+        }
+        .menu-dropdown.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .menu-dropdown a {
+            display: block;
+            color: #C4B9CD;
+            padding: 0.5rem 0;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        body.light-mode .menu-dropdown a {
+            color: #666;
+        }
+        .menu-dropdown a:hover {
+            color: #FF2D74;
+        }
+        .menu-dropdown hr {
+            border: none;
+            height: 1px;
+            background: #2D263D;
+            margin: 0.5rem 0;
+        }
+        body.light-mode .menu-dropdown hr {
+            background: #e0e0e0;
+        }
+
+        /* Theme options */
+        .theme-options {
+            margin: 0.5rem 0;
+        }
+        .theme-options h4 {
+            color: #C4B9CD;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        body.light-mode .theme-options h4 {
+            color: #666;
+        }
+        .theme-colors {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 0.5rem;
+        }
+        .theme-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.2s;
+        }
+        .theme-color:hover {
+            transform: scale(1.1);
+        }
+        .theme-color.active {
+            border-color: white;
+            transform: scale(1.1);
+        }
+        .theme-mode {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.5rem 0;
+            cursor: pointer;
+        }
+        .theme-mode-icon {
+            width: 20px;
+            height: 20px;
+            position: relative;
+        }
+        .sun, .moon {
+            position: absolute;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        .sun {
+            color: #FFD700;
+        }
+        .moon {
+            color: #C4B9CD;
+        }
+        body.light-mode .sun {
+            opacity: 1;
+            transform: rotate(0deg);
+        }
+        body.light-mode .moon {
+            opacity: 0;
+            transform: rotate(-90deg);
+        }
+        body:not(.light-mode) .sun {
+            opacity: 0;
+            transform: rotate(90deg);
+        }
+        body:not(.light-mode) .moon {
+            opacity: 1;
+            transform: rotate(0deg);
+        }
+        .theme-mode-text {
+            font-size: 0.9rem;
+            color: #C4B9CD;
+        }
+        body.light-mode .theme-mode-text {
+            color: #666;
+        }
+
+        /* Center logo with text */
+        .big-center-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 3rem 0;
+            text-align: center;
+        }
+        .big-center-logo a {
+            display: block;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .big-center-logo img {
+            width: 210px;
+            height: 210px;
+            border-radius: 50%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .big-center-logo img:hover {
+            transform: scale(1.05);
+        }
+        .logo-text {
+            color: #e91e63;
+            font-size: 2rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            text-transform: uppercase;
+            transition: color 0.3s;
+        }
+        .intro-text {
+            color: white;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 1.5rem auto 0;
+            padding: 0 1rem;
+            line-height: 1.6;
+        }
+        body.light-mode .intro-text {
+            color: #333;
+        }
+
+        /* Social Buttons Container */
+        .social-buttons {
+            display: flex;
+            gap: 15px;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* Instagram Button */
+        .instagram-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 0.7rem 1.5rem;
+            background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D);
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .instagram-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(225, 48, 108, 0.3);
+        }
+
+        /* Discord Button */
+        .discord-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 0.7rem 1.5rem;
+            background: #5865F2;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .discord-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(88, 101, 242, 0.3);
+        }
+
+        /* Features section */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 3rem auto;
+            padding: 0 5%;
+        }
+        .feature-card {
+            background: #1A1525;
+            padding: 1.5rem;
+            border-radius: 16px;
+            border: 1px solid #2D263D;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: 250px;
+        }
+        body.light-mode .feature-card {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+        }
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+            border-color: #FF2D74;
+        }
+        .feature-icon {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #FF2D74;
+            transition: color 0.3s;
+        }
+        .anilist-icon {
+            width: 36px;
+            height: 36px;
+            margin-bottom: 15px;
+            transition: filter 0.3s;
+        }
+        .feature-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+            color: #F4F0F6;
+        }
+        body.light-mode .feature-card h3 {
+            color: #333;
+        }
+        .feature-card p {
+            color: #A89DB5;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+        body.light-mode .feature-card p {
+            color: #666;
+        }
+        .clickable-card {
+            position: relative;
+            display: block;
+            text-decoration: none;
+        }
+        .clickable-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+        .clickable-card:hover::after {
+            box-shadow: inset 0 0 0 2px #FF2D74;
+        }
+        
+        /* Profile Panel - Responsive */
+        .profile-panel {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            max-width: 400px;
+            height: 100vh;
+            background: #1A1525;
+            border-left: 1px solid #2D263D;
+            padding: 2rem;
+            transition: right 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        body.light-mode .profile-panel {
+            background: #ffffff;
+            border-left: 1px solid #e0e0e0;
+        }
+        @media (max-width: 500px) {
+            .profile-panel {
+                width: 90%;
+                padding: 1.5rem;
+            }
+        }
+        .profile-panel.active {
+            right: 0;
+        }
+        .profile-panel h2 {
+            color: #FF2D74;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-size: 1.5rem;
+            transition: color 0.3s;
+        }
+        .profile-card {
+            background: #2D263D;
+            border-radius: 12px;
+            padding: 1.2rem;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+        body.light-mode .profile-card {
+            background: #f5f5f7;
+        }
+        .profile-card:hover {
+            border-color: #FF2D74;
+            transform: translateY(-3px);
+        }
+        .profile-card:active {
+            transform: scale(0.98);
+        }
+        .profile-card img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #FF2D74;
+            transition: border-color 0.3s;
+        }
+        .profile-info {
+            flex: 1;
+        }
+        .profile-info h3 {
+            color: #F4F0F6;
+            margin-bottom: 0.3rem;
+            font-size: 1.1rem;
+        }
+        body.light-mode .profile-info h3 {
+            color: #333;
+        }
+        .profile-info span {
+            color: #A89DB5;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+        }
+        body.light-mode .profile-info span {
+            color: #666;
+        }
+        .profile-info i {
+            color: #FF2D74;
+            font-size: 1rem;
+            transition: color 0.3s;
+        }
+        .close-panel {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            color: #C4B9CD;
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: color 0.2s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        body.light-mode .close-panel {
+            color: #666;
+        }
+        .close-panel:hover {
+            color: #FF2D74;
+            background: rgba(255, 45, 116, 0.1);
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        footer {
+            text-align: center;
+            padding: 30px 5%;
+            background: #1A1525;
+            border-top: 1px solid #2D263D;
+            margin-top: auto;
+        }
+        body.light-mode footer {
+            background: #ffffff;
+            border-top: 1px solid #e0e0e0;
+        }
+        footer p {
+            color: #6B5B7D;
+            font-size: 0.9rem;
+        }
+        body.light-mode footer p {
+            color: #999;
+        }
+        
+        /* Touch improvements */
+        @media (hover: none) {
+            .feature-card:hover {
+                transform: none;
+                box-shadow: none;
+                border-color: #2D263D;
+            }
+            body.light-mode .feature-card:hover {
+                border-color: #e0e0e0;
+            }
+            .feature-card:active {
+                transform: translateY(-8px);
+                box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+                border-color: #FF2D74;
+            }
+            .clickable-card:hover::after {
+                box-shadow: none;
+            }
+            .profile-card:hover {
+                border-color: transparent;
+                transform: none;
+            }
+            .profile-card:active {
+                border-color: #FF2D74;
+                transform: scale(0.98);
+            }
+        }
+
+        /* Theme color classes */
+        body.theme-dark-blue {
+            --primary-color: #1a237e;
+            --secondary-color: #0d47a1;
+        }
+        body.theme-sky-blue {
+            --primary-color: #0288d1;
+            --secondary-color: #03a9f4;
+        }
+        body.theme-light-green {
+            --primary-color: #2e7d32;
+            --secondary-color: #4caf50;
+        }
+        body.theme-light-orange {
+            --primary-color: #e65100;
+            --secondary-color: #ff9800;
+        }
+        body.theme-pink {
+            --primary-color: #ad1457;
+            --secondary-color: #e91e63;
+        }
+
+        /* Apply theme colors to specific elements */
+        body.theme-dark-blue .logo-text {
+            color: #0d47a1;
+        }
+        body.theme-sky-blue .logo-text {
+            color: #03a9f4;
+        }
+        body.theme-light-green .logo-text {
+            color: #4caf50;
+        }
+        body.theme-light-orange .logo-text {
+            color: #ff9800;
+        }
+        body.theme-pink .logo-text {
+            color: #e91e63;
+        }
+
+        body.theme-dark-blue .feature-icon,
+        body.theme-sky-blue .feature-icon,
+        body.theme-light-green .feature-icon,
+        body.theme-light-orange .feature-icon,
+        body.theme-pink .feature-icon,
+        body.theme-dark-blue .profile-info i,
+        body.theme-sky-blue .profile-info i,
+        body.theme-light-green .profile-info i,
+        body.theme-light-orange .profile-info i,
+        body.theme-pink .profile-info i,
+        body.theme-dark-blue .profile-card img,
+        body.theme-sky-blue .profile-card img,
+        body.theme-light-green .profile-card img,
+        body.theme-light-orange .profile-card img,
+        body.theme-pink .profile-card img,
+        body.theme-dark-blue .profile-panel h2,
+        body.theme-sky-blue .profile-panel h2,
+        body.theme-light-green .profile-panel h2,
+        body.theme-light-orange .profile-panel h2,
+        body.theme-pink .profile-panel h2,
+        body.theme-dark-blue .youtube-icon,
+        body.theme-sky-blue .youtube-icon,
+        body.theme-light-green .youtube-icon,
+        body.theme-light-orange .youtube-icon,
+        body.theme-pink .youtube-icon,
+        body.theme-dark-blue .floating-search-btn,
+        body.theme-sky-blue .floating-search-btn,
+        body.theme-light-green .floating-search-btn,
+        body.theme-light-orange .floating-search-btn,
+        body.theme-pink .floating-search-btn {
+            color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        body.theme-dark-blue .menu-btn.open .menu-btn__burger::before,
+        body.theme-dark-blue .menu-btn.open .menu-btn__burger::after,
+        body.theme-sky-blue .menu-btn.open .menu-btn__burger::before,
+        body.theme-sky-blue .menu-btn.open .menu-btn__burger::after,
+        body.theme-light-green .menu-btn.open .menu-btn__burger::before,
+        body.theme-light-green .menu-btn.open .menu-btn__burger::after,
+        body.theme-light-orange .menu-btn.open .menu-btn__burger::before,
+        body.theme-light-orange .menu-btn.open .menu-btn__burger::after,
+        body.theme-pink .menu-btn.open .menu-btn__burger::before,
+        body.theme-pink .menu-btn.open .menu-btn__burger::after,
+        body.theme-dark-blue .nav-icon:hover,
+        body.theme-sky-blue .nav-icon:hover,
+        body.theme-light-green .nav-icon:hover,
+        body.theme-light-orange .nav-icon:hover,
+        body.theme-pink .nav-icon:hover,
+        body.theme-dark-blue .menu-dropdown a:hover,
+        body.theme-sky-blue .menu-dropdown a:hover,
+        body.theme-light-green .menu-dropdown a:hover,
+        body.theme-light-orange .menu-dropdown a:hover,
+        body.theme-pink .menu-dropdown a:hover,
+        body.theme-dark-blue .close-panel:hover,
+        body.theme-sky-blue .close-panel:hover,
+        body.theme-light-green .close-panel:hover,
+        body.theme-light-orange .close-panel:hover,
+        body.theme-pink .close-panel:hover {
+            color: var(--secondary-color);
+        }
+
+        body.theme-dark-blue .feature-card:hover,
+        body.theme-sky-blue .feature-card:hover,
+        body.theme-light-green .feature-card:hover,
+        body.theme-light-orange .feature-card:hover,
+        body.theme-pink .feature-card:hover,
+        body.theme-dark-blue .profile-card:hover,
+        body.theme-sky-blue .profile-card:hover,
+        body.theme-light-green .profile-card:hover,
+        body.theme-light-orange .profile-card:hover,
+        body.theme-pink .profile-card:hover,
+        body.theme-dark-blue .clickable-card:hover::after,
+        body.theme-sky-blue .clickable-card:hover::after,
+        body.theme-light-green .clickable-card:hover::after,
+        body.theme-light-orange .clickable-card:hover::after,
+        body.theme-pink .clickable-card:hover::after {
+            border-color: var(--secondary-color);
+            box-shadow: inset 0 0 0 2px var(--secondary-color);
+        }
+
+        /* AniList icon color changes */
+        body.theme-dark-blue .anilist-icon {
+            filter: brightness(0) saturate(100%) invert(14%) sepia(89%) saturate(3743%) hue-rotate(216deg) brightness(89%) contrast(101%);
+        }
+        body.theme-sky-blue .anilist-icon {
+            filter: brightness(0) saturate(100%) invert(40%) sepia(99%) saturate(1352%) hue-rotate(166deg) brightness(97%) contrast(105%);
+        }
+        body.theme-light-green .anilist-icon {
+            filter: brightness(0) saturate(100%) invert(37%) sepia(98%) saturate(748%) hue-rotate(87deg) brightness(93%) contrast(91%);
+        }
+        body.theme-light-orange .anilist-icon {
+            filter: brightness(0) saturate(100%) invert(42%) sepia(99%) saturate(2165%) hue-rotate(2deg) brightness(99%) contrast(106%);
+        }
+        body.theme-pink .anilist-icon {
+            filter: brightness(0) saturate(100%) invert(22%) sepia(98%) saturate(2090%) hue-rotate(313deg) brightness(89%) contrast(93%);
+        }
+
+        /* YouTube icon styles */
+        .youtube-icon {
+            color: #FF0000;
+            margin-right: 5px;
+            transition: color 0.3s;
+        }
+        body.theme-pink .youtube-icon {
+            color: #e91e63;
+        }
+        body.theme-dark-blue .youtube-icon {
+            color: #0d47a1;
+        }
+        body.theme-sky-blue .youtube-icon {
+            color: #03a9f4;
+        }
+        body.theme-light-green .youtube-icon {
+            color: #4caf50;
+        }
+        body.theme-light-orange .youtube-icon {
+            color: #ff9800;
+        }
+
+        /* Floating Search Button */
+        .floating-search-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: #1A1525;
+            border: 2px solid #FF2D74;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 99;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        body.light-mode .floating-search-btn {
+            background: #ffffff;
+            border-color: #FF2D74;
+        }
+        .floating-search-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+        .floating-search-btn i {
+            color: #FF2D74;
+            font-size: 1.5rem;
+            transition: color 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-left">
+            <div class="nav-title">Saizen</div>
+            <a href="https://github.com/AsatoSaizen" target="_blank" class="nav-icon" title="GitHub">
+                <i class="fab fa-github"></i>
+            </a>
+        </div>
+        
+        <!-- Animated Menu Button -->
+        <div class="menu-btn" id="menuBtn">
+            <div class="menu-btn__burger"></div>
+        </div>
+        
+        <!-- Menu Dropdown -->
+        <div class="menu-dropdown" id="menuDropdown">
+            <a href="#">Guide</a>
+            <hr>
+            <a href="#">Social Media</a>
+            
+            <!-- Theme Options -->
+            <div class="theme-options">
+                <h4>Theme Color</h4>
+                <div class="theme-colors">
+                    <div class="theme-color" style="background: #1a237e;" data-theme="dark-blue" title="Dark Blue"></div>
+                    <div class="theme-color" style="background: #0288d1;" data-theme="sky-blue" title="Sky Blue"></div>
+                    <div class="theme-color" style="background: #2e7d32;" data-theme="light-green" title="Light Green"></div>
+                    <div class="theme-color" style="background: #e65100;" data-theme="light-orange" title="Light Orange"></div>
+                    <div class="theme-color" style="background: #ad1457;" data-theme="pink" title="Pink"></div>
+                </div>
+                
+                <div class="theme-mode" id="themeMode">
+                    <div class="theme-mode-icon">
+                        <i class="fas fa-sun sun"></i>
+                        <i class="fas fa-moon moon"></i>
+                    </div>
+                    <span class="theme-mode-text">Dark Mode</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="big-center-logo">
+        <a href="https://youtu.be/RLw1-xyTvTY" target="_blank">
+            <img src="https://avatars.githubusercontent.com/u/193106854?u=af480dbba8bdb36ae5305b6826df8910eebe0bf6&v=4" alt="Clickable Logo">
+            <div class="logo-text">Saizen</div>
+        </a>
+        <div class="intro-text">
+            Yo, what's up, Ningen tachi? I'm Asato Saizen. I love developing my own apps as a hobby, 
+            and I'm an unpaid worker. I also really love watching donghua and anime.
+        </div>
+        <div class="social-buttons">
+            <a href="https://www.instagram.com/asatosaizen?igsh=eHN6eXl6YnJrMW43" target="_blank" class="instagram-btn">
+                <i class="fab fa-instagram"></i> Follow
+            </a>
+            <a href="https://discord.gg/YEKC2wv9" target="_blank" class="discord-btn">
+                <i class="fab fa-discord"></i> Join Server
+            </a>
+        </div>
+    </div>
+
+    <div class="features">
+        <a href="https://anilist.co/user/AsatoSaizen/" target="_blank" class="feature-card clickable-card">
+            <img src="https://anilist.co/img/icons/icon.svg" class="anilist-icon" alt="AniList Logo">
+            <h3>View my AniList Profile</h3>
+            <p>If you're interested in my anime and manga preferences, feel free to visit my AniList profile.</p>
+        </a>
+        <a href="https://anilist.co/user/AsatoSaizen/stats/anime/overview" target="_blank" class="feature-card clickable-card">
+            <i class="fas fa-chart-pie feature-icon"></i>
+            <h3>Anime Statistics</h3>
+            <p>Check out my detailed anime watching statistics and preferences on AniList</p>
+        </a>
+        <div class="feature-card clickable-card" id="friendsCard">
+            <i class="fas fa-users feature-icon"></i>
+            <h3>Friends</h3>
+            <p>Check out some of my friends' profiles</p>
+        </div>
+    </div>
+
+    <!-- Profile Panel -->
+    <div class="overlay" id="overlay"></div>
+    <div class="profile-panel" id="profilePanel">
+        <div class="close-panel" id="closePanel">&times;</div>
+        <h2>Friends</h2>
+        
+        <div class="profile-card" onclick="window.open('https://www.instagram.com/mao.mao__o?igsh=MTBhb21hc2o0d2V4Nw==', '_blank')">
+            <img src="https://scontent.cdninstagram.com/v/t51.2885-19/486306440_2496070157396398_169555779500716379_n.jpg?stp=dst-jpg_s160x160_tt6&_nc_cat=109&ccb=1-7&_nc_sid=bf7eb4&_nc_ohc=Gw1difwrrT0Q7kNvgFerbo9&_nc_oc=Adlf_E0hbb-OK-086uZMaQ3HEzi1FtPQtEBUozHAxuQ5jJ7IGg5OzZtiGb1DutxECW4XZa5iY3ZUhSR8yfNKE4Vk&_nc_zt=24&_nc_ht=scontent.cdninstagram.com&oh=00_AYFLWrdnJ-e6mlLfWGGx6ZzRyEk2taVrMUfojVXhoIiQjA&oe=67EC89DF" alt="Mao Mao">
+            <div class="profile-info">
+                <h3>Mao Mao</h3>
+                <span><i class="fab fa-instagram"></i> @mao.mao__o</span>
+            </div>
+        </div>
+        
+        <div class="profile-card" onclick="window.open('https://youtube.com/@gogo-appu', '_blank')">
+            <img src="https://yt3.googleusercontent.com/IMBX1L0y8x8F1Vknc8W7u4d3mvLWiU_uUs7ce4rjpBVZYCbBkUiYpBj-u_3KH8aaJtanQFAkhA=s160-c-k-c0x00ffffff-no-rj" alt="GOgo~Appu">
+            <div class="profile-info">
+                <h3>GOgo~Appu</h3>
+                <span><i class="fab fa-youtube youtube-icon"></i> Saizen's very own vlogger. Click here to support her.</span>
+            </div>
+        </div>
+        
+        <div class="profile-card" onclick="window.open('https://www.instagram.com/swastika_tam129?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==', '_blank')">
+            <img src="https://scontent.cdninstagram.com/v/t51.2885-19/485399943_1151139153374228_4954266359095767752_n.jpg?stp=dst-jpg_s160x160_tt6&_nc_cat=104&ccb=1-7&_nc_sid=bf7eb4&_nc_ohc=N9HHzgkJCy4Q7kNvgGyaAH_&_nc_oc=Adl-sHfZkx91ea6nmipbPDfEFjHXTw7ky4eG5Y63s9eqe9q1Al5Z27KKUleE_0EnTLtCYqnVg8dHcR22PEoNk1rB&_nc_zt=24&_nc_ht=scontent.cdninstagram.com&oh=00_AYE7Sul7IR1NqZNS9iswhrblZJXJXulDb1zS2Jeo22kGqg&oe=67EC8B3C" alt="Swastika">
+            <div class="profile-info">
+                <h3>Swastika</h3>
+                <span><i class="fab fa-instagram"></i> @swastika_tam129</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Search Button -->
+    <div class="floating-search-btn" id="floatingSearchBtn">
+        <i class="fas fa-search"></i>
+    </div>
+
+    <footer>
+        <p>© 2024 Asato Saizen. Not affiliated with GitHub. Open source project.</p>
+    </footer>
+
+    <script>
+        // Menu Toggle Functionality
+        const menuBtn = document.getElementById('menuBtn');
+        const menuDropdown = document.getElementById('menuDropdown');
+        
+        menuBtn.addEventListener('click', () => {
+            menuBtn.classList.toggle('open');
+            menuDropdown.classList.toggle('active');
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!menuBtn.contains(e.target) && !menuDropdown.contains(e.target)) {
+                menuBtn.classList.remove('open');
+                menuDropdown.classList.remove('active');
+            }
+        });
+
+        // Profile Panel Functionality
+        const friendsCard = document.getElementById('friendsCard');
+        const profilePanel = document.getElementById('profilePanel');
+        const closePanel = document.getElementById('closePanel');
+        const overlay = document.getElementById('overlay');
+        
+        friendsCard.addEventListener('click', () => {
+            profilePanel.classList.add('active');
+            overlay.classList.add('active');
+        });
+        
+        closePanel.addEventListener('click', () => {
+            profilePanel.classList.remove('active');
+            overlay.classList.remove('active');
+        });
+        
+        overlay.addEventListener('click', () => {
+            profilePanel.classList.remove('active');
+            overlay.classList.remove('active');
+        });
+        
+        // Better touch support for mobile
+        friendsCard.addEventListener('touchstart', () => {
+            friendsCard.classList.add('active');
+        });
+        
+        friendsCard.addEventListener('touchend', () => {
+            friendsCard.classList.remove('active');
+        });
+
+        // Theme Mode Toggle
+        const themeMode = document.getElementById('themeMode');
+        const themeModeText = document.querySelector('.theme-mode-text');
+        
+        themeMode.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            
+            if (document.body.classList.contains('light-mode')) {
+                themeModeText.textContent = 'Light Mode';
+            } else {
+                themeModeText.textContent = 'Dark Mode';
+            }
+            
+            // Save preference to localStorage
+            localStorage.setItem('themeMode', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+        });
+
+        // Check for saved theme preference
+        if (localStorage.getItem('themeMode') === 'light') {
+            document.body.classList.add('light-mode');
+            themeModeText.textContent = 'Light Mode';
+        }
+
+        // Theme Color Selection
+        const themeColors = document.querySelectorAll('.theme-color');
+        
+        themeColors.forEach(color => {
+            color.addEventListener('click', () => {
+                // Remove all theme classes
+                document.body.classList.remove(
+                    'theme-dark-blue',
+                    'theme-sky-blue',
+                    'theme-light-green',
+                    'theme-light-orange',
+                    'theme-pink'
+                );
+                
+                // Add selected theme class
+                const theme = color.getAttribute('data-theme');
+                if (theme) {
+                    document.body.classList.add(`theme-${theme}`);
+                }
+                
+                // Update active state
+                themeColors.forEach(c => c.classList.remove('active'));
+                color.classList.add('active');
+                
+                // Save preference to localStorage
+                localStorage.setItem('themeColor', theme || '');
+            });
+        });
+
+        // Check for saved color preference
+        const savedColor = localStorage.getItem('themeColor');
+        if (savedColor) {
+            document.body.classList.add(`theme-${savedColor}`);
+            document.querySelector(`.theme-color[data-theme="${savedColor}"]`).classList.add('active');
+        }
+
+        // Floating Search Button
+        const floatingSearchBtn = document.getElementById('floatingSearchBtn');
+        floatingSearchBtn.addEventListener('click', () => {
+            window.open('https://youtu.be/xvFZjo5PgG0', '_blank');
+        });
+    </script>
+</body>
+</html>
